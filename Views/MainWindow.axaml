@@ -1,0 +1,636 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:UmlStudio.ViewModels"
+        xmlns:ctrl="using:UmlStudio.Controls"
+        xmlns:models="using:UmlStudio.Models"
+        xmlns:svc="using:UmlStudio.Services"
+        x:Class="UmlStudio.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        x:Name="Root"
+        Title="{Binding WindowTitle}"
+        Width="1600" Height="940" MinWidth="1100" MinHeight="680"
+        WindowStartupLocation="CenterScreen">
+
+  <Window.KeyBindings>
+    <KeyBinding Gesture="Ctrl+N" Command="{Binding NewProjectCommand}" CommandParameter="basic"/>
+    <KeyBinding Gesture="Ctrl+O" Command="{Binding OpenProjectCommand}"/>
+    <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveCommand}"/>
+    <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveAsCommand}"/>
+    <KeyBinding Gesture="Ctrl+Z" Command="{Binding UndoCommand}"/>
+    <KeyBinding Gesture="Ctrl+Y" Command="{Binding RedoCommand}"/>
+    <KeyBinding Gesture="Ctrl+Shift+Z" Command="{Binding RedoCommand}"/>
+    <KeyBinding Gesture="Delete" Command="{Binding DeleteSelectedCommand}"/>
+    <KeyBinding Gesture="Ctrl+A" Command="{Binding SelectAllCommand}"/>
+    <KeyBinding Gesture="Ctrl+D" Command="{Binding DuplicateCommand}"/>
+    <KeyBinding Gesture="Ctrl+F" Command="{Binding FindCommand}"/>
+    <KeyBinding Gesture="Ctrl+OemPlus" Command="{Binding ZoomInCommand}"/>
+    <KeyBinding Gesture="Ctrl+OemMinus" Command="{Binding ZoomOutCommand}"/>
+    <KeyBinding Gesture="Ctrl+D0" Command="{Binding ZoomResetCommand}"/>
+    <KeyBinding Gesture="Ctrl+Shift+F" Command="{Binding ZoomFitCommand}"/>
+  </Window.KeyBindings>
+
+  <DockPanel>
+    <!-- ======== Quick access / title strip ======== -->
+    <Border DockPanel.Dock="Top" Classes="topbar">
+      <Grid ColumnDefinitions="Auto,Auto,*,Auto">
+        <StackPanel Orientation="Horizontal" Margin="10,0,14,0" Spacing="8" VerticalAlignment="Center">
+          <ctrl:UmlGlyph Glyph="root" Width="18" Height="18"/>
+          <TextBlock Text="UML Studio" FontWeight="Bold" FontSize="13" VerticalAlignment="Center" Foreground="#FFFFFF"/>
+          <TextBlock Text="Enterprise Modeling" FontSize="11" VerticalAlignment="Center" Foreground="{StaticResource FgFaint}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="1" VerticalAlignment="Center">
+          <Rectangle Width="1" Height="16" Fill="{StaticResource LineSoft}" Margin="0,0,8,0"/>
+          <Button Classes="icon" ToolTip.Tip="열기 (Ctrl+O)" Command="{Binding OpenProjectCommand}"><PathIcon Data="{StaticResource Ic.FolderOpenOutline}"/></Button>
+          <Button Classes="icon" ToolTip.Tip="저장 (Ctrl+S)" Command="{Binding SaveCommand}"><PathIcon Data="{StaticResource Ic.ContentSaveOutline}"/></Button>
+          <Button Classes="icon" ToolTip.Tip="실행 취소 (Ctrl+Z)" Command="{Binding UndoCommand}"><PathIcon Data="{StaticResource Ic.Undo}"/></Button>
+          <Button Classes="icon" ToolTip.Tip="다시 실행 (Ctrl+Y)" Command="{Binding RedoCommand}"><PathIcon Data="{StaticResource Ic.Redo}"/></Button>
+          <Button Classes="icon" ToolTip.Tip="시작 페이지" Command="{Binding ShowStartPageCommand}"><PathIcon Data="{StaticResource Ic.HomeOutline}"/></Button>
+        </StackPanel>
+        <TextBlock Grid.Column="2" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="12" Foreground="{StaticResource FgDim}"
+                   Text="{Binding WindowTitle}"/>
+        <Border Grid.Column="3" Margin="0,3,10,3" Width="260" CornerRadius="3" Background="#1A2130" BorderBrush="{StaticResource LineSoft}" BorderThickness="1">
+          <Grid ColumnDefinitions="Auto,*">
+            <PathIcon Data="{StaticResource Ic.Magnify}" Width="13" Height="13" Margin="8,0,2,0" Foreground="{StaticResource FgDim}"/>
+            <TextBox x:Name="TopSearch" Grid.Column="1" Watermark="모델 검색 (Ctrl+F)" BorderThickness="0" Background="Transparent" MinHeight="20" Padding="4,1"
+                     Text="{Binding BrowserFilter}" VerticalContentAlignment="Center"/>
+          </Grid>
+        </Border>
+      </Grid>
+    </Border>
+    <Border DockPanel.Dock="Top" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Background="{StaticResource Bg2}">
+      <TabControl Classes="ribbon" Height="122" SelectedIndex="0">
+<TabItem Header="시작"><StackPanel Orientation="Horizontal" Margin="4,0"><Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" ToolTip.Tip="새 프로젝트 / 모델 빌더"><StackPanel><PathIcon Data="{StaticResource Ic.FilePlusOutline}"/><TextBlock Text="새 프로젝트"/></StackPanel><Button.Flyout><MenuFlyout><MenuItem Header="빈 프로젝트" Command="{Binding NewProjectCommand}" CommandParameter="basic"/><MenuItem Header="모델 빌더 (6개 관점 패키지)" Command="{Binding NewProjectCommand}" CommandParameter="full"/><Separator/><MenuItem Header="데모 프로젝트 열기" Command="{Binding OpenDemoCommand}"/></MenuFlyout></Button.Flyout></Button>
+<Button Classes="rbig" Command="{Binding OpenProjectCommand}" ToolTip.Tip="프로젝트 열기 (Ctrl+O)"><StackPanel><PathIcon Data="{StaticResource Ic.FolderOpenOutline}"/><TextBlock Text="열기"/></StackPanel></Button>
+<StackPanel Width="132"><Button Classes="rsmall" Command="{Binding SaveCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.ContentSaveOutline}"/><TextBlock Text="저장"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding SaveAsCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.ContentSaveEditOutline}"/><TextBlock Text="다른 이름으로 저장"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding CloseProjectCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.Close}"/><TextBlock Text="프로젝트 닫기"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="프로젝트"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding UndoCommand}" ToolTip.Tip="실행 취소 (Ctrl+Z)"><StackPanel><PathIcon Data="{StaticResource Ic.Undo}"/><TextBlock Text="실행 취소"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding RedoCommand}" ToolTip.Tip="다시 실행 (Ctrl+Y)"><StackPanel><PathIcon Data="{StaticResource Ic.Redo}"/><TextBlock Text="다시 실행"/></StackPanel></Button>
+<StackPanel Width="118"><Button Classes="rsmall" Command="{Binding DeleteSelectedCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.DeleteOutline}"/><TextBlock Text="삭제"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding DuplicateCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.ContentCopy}"/><TextBlock Text="복제"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding SelectAllCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.SelectAll}"/><TextBlock Text="모두 선택"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="편집"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding FindCommand}" ToolTip.Tip="모델에서 찾기 (Ctrl+F)"><StackPanel><PathIcon Data="{StaticResource Ic.Magnify}"/><TextBlock Text="모델 검색"/></StackPanel></Button>
+<StackPanel Width="124"><Button Classes="rsmall" Command="{Binding ShowStartPageCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.HomeOutline}"/><TextBlock Text="시작 페이지"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding EditPropertiesCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.TableEdit}"/><TextBlock Text="속성 창"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding DiagramPropertiesCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.InformationOutline}"/><TextBlock Text="다이어그램 정보"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="탐색"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding OpenDemoCommand}" ToolTip.Tip="온라인 쇼핑몰 샘플 모델"><StackPanel><PathIcon Data="{StaticResource Ic.PackageVariantClosed}"/><TextBlock Text="데모 모델"/></StackPanel></Button>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="샘플"/></Grid></Border>
+</StackPanel></TabItem>
+<TabItem Header="디자인"><StackPanel Orientation="Horizontal" Margin="4,0"><Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding AddPackageCommand}" CommandParameter="{x:Null}" ToolTip.Tip="선택한 패키지 아래에 새 패키지"><StackPanel><ctrl:UmlGlyph Glyph="package" Width="24" Height="24" Margin="0,2,0,3"/><TextBlock Text="새 패키지"/></StackPanel></Button>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="모델"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Class}"><StackPanel><ctrl:UmlGlyph Glyph="diagram:Class" Width="24" Height="24" Margin="0,2,0,3"/><TextBlock Text="클래스"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Sequence}"><StackPanel><ctrl:UmlGlyph Glyph="diagram:Sequence" Width="24" Height="24" Margin="0,2,0,3"/><TextBlock Text="시퀀스"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.UseCase}"><StackPanel><ctrl:UmlGlyph Glyph="diagram:UseCase" Width="24" Height="24" Margin="0,2,0,3"/><TextBlock Text="유스케이스"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Activity}"><StackPanel><ctrl:UmlGlyph Glyph="diagram:Activity" Width="24" Height="24" Margin="0,2,0,3"/><TextBlock Text="액티비티"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.State}"><StackPanel><ctrl:UmlGlyph Glyph="diagram:State" Width="24" Height="24" Margin="0,2,0,3"/><TextBlock Text="상태 머신"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Component}"><StackPanel><ctrl:UmlGlyph Glyph="diagram:Component" Width="24" Height="24" Margin="0,2,0,3"/><TextBlock Text="컴포넌트"/></StackPanel></Button>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="새 다이어그램"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><StackPanel Width="132"><Button Classes="rsmall" Command="{Binding EditPropertiesCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.TableEdit}"/><TextBlock Text="속성 편집 (F2)"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding BringToFrontCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.ArrangeBringToFront}"/><TextBlock Text="맨 앞으로"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding SendToBackCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.ArrangeSendToBack}"/><TextBlock Text="맨 뒤로"/></StackPanel></Button>
+</StackPanel>
+<StackPanel Width="132"><Button Classes="rsmall" Command="{Binding AutoSizeCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.Resize}"/><TextBlock Text="크기 자동 맞춤"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding SetRouteCommand}" CommandParameter="ortho"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.VectorPolyline}"/><TextBlock Text="직교 라우팅"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding SetRouteCommand}" CommandParameter="direct"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.VectorLine}"/><TextBlock Text="직선 라우팅"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="요소 · 연결선"/></Grid></Border>
+</StackPanel></TabItem>
+<TabItem Header="레이아웃"><StackPanel Orientation="Horizontal" Margin="4,0"><Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><StackPanel Width="112"><Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="left"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.AlignHorizontalLeft}"/><TextBlock Text="왼쪽 맞춤"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="center"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.AlignHorizontalCenter}"/><TextBlock Text="가운데 맞춤"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="right"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.AlignHorizontalRight}"/><TextBlock Text="오른쪽 맞춤"/></StackPanel></Button>
+</StackPanel>
+<StackPanel Width="112"><Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="top"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.AlignVerticalTop}"/><TextBlock Text="위쪽 맞춤"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="middle"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.AlignVerticalCenter}"/><TextBlock Text="중간 맞춤"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="bottom"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.AlignVerticalBottom}"/><TextBlock Text="아래쪽 맞춤"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="정렬"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><StackPanel Width="122"><Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="hspace"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.DistributeHorizontalCenter}"/><TextBlock Text="가로 간격 균등"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="vspace"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.DistributeVerticalCenter}"/><TextBlock Text="세로 간격 균등"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding AutoSizeCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.Resize}"/><TextBlock Text="크기 자동 맞춤"/></StackPanel></Button>
+</StackPanel>
+<StackPanel Width="104"><Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="width"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.ArrowLeftRight}"/><TextBlock Text="같은 너비"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding AlignCommand}" CommandParameter="height"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.ArrowUpDown}"/><TextBlock Text="같은 높이"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="간격 · 크기"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding ZoomFitCommand}" ToolTip.Tip="전체 보기 (Ctrl+Shift+F)"><StackPanel><PathIcon Data="{StaticResource Ic.FitToScreenOutline}"/><TextBlock Text="전체 보기"/></StackPanel></Button>
+<StackPanel Width="98"><Button Classes="rsmall" Command="{Binding ZoomInCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.MagnifyPlusOutline}"/><TextBlock Text="확대"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding ZoomOutCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.MagnifyMinusOutline}"/><TextBlock Text="축소"/></StackPanel></Button>
+<Button Classes="rsmall" Command="{Binding ZoomResetCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.MagnifyScan}"/><TextBlock Text="100%"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="확대/축소"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><StackPanel Width="130"><ToggleButton Classes="rsmall" IsChecked="{Binding ShowGrid}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.Grid}"/><TextBlock Text="격자 표시"/></StackPanel></ToggleButton>
+<ToggleButton Classes="rsmall" IsChecked="{Binding SnapToGrid}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.Magnet}"/><TextBlock Text="격자에 맞춤"/></StackPanel></ToggleButton>
+<Button Classes="rsmall" Command="{Binding ToggleFrameCommand}"><StackPanel Orientation="Horizontal"><PathIcon Data="{StaticResource Ic.CheckboxMultipleBlankOutline}"/><TextBlock Text="다이어그램 프레임"/></StackPanel></Button>
+</StackPanel>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="격자"/></Grid></Border>
+</StackPanel></TabItem>
+<TabItem Header="발행"><StackPanel Orientation="Horizontal" Margin="4,0"><Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding ExportPngCommand}"><StackPanel><PathIcon Data="{StaticResource Ic.FileImageOutline}"/><TextBlock Text="PNG 이미지"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding ExportSvgCommand}"><StackPanel><PathIcon Data="{StaticResource Ic.Svg}"/><TextBlock Text="SVG 벡터"/></StackPanel></Button>
+<Button Classes="rbig" Command="{Binding ExportAllPngCommand}"><StackPanel><PathIcon Data="{StaticResource Ic.Export}"/><TextBlock Text="모든 다이어그램"/></StackPanel></Button>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="다이어그램 내보내기"/></Grid></Border>
+<Border Classes="rgroup"><Grid RowDefinitions="*,Auto"><StackPanel Orientation="Horizontal" Spacing="2"><Button Classes="rbig" Command="{Binding SaveAsCommand}"><StackPanel><PathIcon Data="{StaticResource Ic.FileCogOutline}"/><TextBlock Text="모델 파일 (.umlproj)"/></StackPanel></Button>
+</StackPanel><TextBlock Grid.Row="1" Classes="rlabel" Text="모델 교환"/></Grid></Border>
+</StackPanel></TabItem>
+      </TabControl>
+    </Border>
+    <!-- ======== Status bar ======== -->
+    <Border DockPanel.Dock="Bottom" Classes="status" Background="{StaticResource StatusBg}" Height="24" Padding="10,0">
+      <Grid ColumnDefinitions="*,Auto">
+        <StackPanel Orientation="Horizontal">
+          <PathIcon Data="{StaticResource Ic.InformationOutline}" Width="12" Height="12" Foreground="#CFE0FF" Margin="0,0,6,0"/>
+          <TextBlock Text="{Binding StatusText}"/>
+        </StackPanel>
+        <StackPanel Grid.Column="1" Orientation="Horizontal">
+          <TextBlock Text="{Binding ModeText}" FontWeight="SemiBold"/>
+          <Rectangle Classes="sep"/>
+          <TextBlock Text="{Binding DiagramTypeText}"/>
+          <Rectangle Classes="sep"/>
+          <TextBlock Text="{Binding SelectionText}"/>
+          <Rectangle Classes="sep"/>
+          <TextBlock Text="{Binding MouseText}" MinWidth="110"/>
+          <Rectangle Classes="sep"/>
+          <Button Classes="icon" Height="20" Width="20" Command="{Binding ZoomOutCommand}" Foreground="#FFFFFF"><PathIcon Data="{StaticResource Ic.MagnifyMinusOutline}" Width="12" Height="12"/></Button>
+          <Slider Width="110" Minimum="0.2" Maximum="4" Value="{Binding Zoom}" VerticalAlignment="Center" Margin="2,-8" MinHeight="0"/>
+          <Button Classes="icon" Height="20" Width="20" Command="{Binding ZoomInCommand}" Foreground="#FFFFFF"><PathIcon Data="{StaticResource Ic.MagnifyPlusOutline}" Width="12" Height="12"/></Button>
+          <TextBlock Text="{Binding ZoomText}" Width="44" TextAlignment="Right"/>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <!-- ======== Workspace ======== -->
+    <Grid ColumnDefinitions="262,4,184,*,4,320">
+
+      <!-- Project Browser -->
+      <Border Grid.Column="0" Classes="dock" BorderThickness="0,0,1,0">
+        <DockPanel>
+          <Border DockPanel.Dock="Top" Classes="dockhead">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+              <PathIcon Data="{StaticResource Ic.FileTreeOutline}" Width="14" Height="14" Margin="0,0,6,0" Foreground="{StaticResource Accent}"/>
+              <TextBlock Grid.Column="1" Classes="title" Text="프로젝트 브라우저"/>
+              <StackPanel Grid.Column="2" Orientation="Horizontal">
+                <Button Classes="icon" ToolTip.Tip="새 패키지" Command="{Binding AddPackageCommand}" CommandParameter="{x:Null}"><PathIcon Data="{StaticResource Ic.FolderPlusOutline}"/></Button>
+                <Button Classes="icon" ToolTip.Tip="새 다이어그램">
+                  <PathIcon Data="{StaticResource Ic.SitemapOutline}"/>
+                  <Button.Flyout>
+                    <MenuFlyout Placement="BottomEdgeAlignedLeft">
+                      <MenuItem Header="클래스 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Class}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Class"/></MenuItem.Icon></MenuItem>
+                      <MenuItem Header="시퀀스 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Sequence}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Sequence"/></MenuItem.Icon></MenuItem>
+                      <MenuItem Header="유스케이스 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.UseCase}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:UseCase"/></MenuItem.Icon></MenuItem>
+                      <MenuItem Header="액티비티 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Activity}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Activity"/></MenuItem.Icon></MenuItem>
+                      <MenuItem Header="상태 머신 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.State}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:State"/></MenuItem.Icon></MenuItem>
+                      <MenuItem Header="컴포넌트 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Component}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Component"/></MenuItem.Icon></MenuItem>
+                    </MenuFlyout>
+                  </Button.Flyout>
+                </Button>
+                <Button Classes="icon" ToolTip.Tip="찾기 (Ctrl+F)" Command="{Binding FindCommand}"><PathIcon Data="{StaticResource Ic.Magnify}"/></Button>
+              </StackPanel>
+            </Grid>
+          </Border>
+          <Border DockPanel.Dock="Top" Padding="6,5" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+            <TextBox x:Name="BrowserSearch" Watermark="요소·다이어그램 필터..." Text="{Binding BrowserFilter}" MinHeight="22" Padding="6,2"/>
+          </Border>
+          <Border DockPanel.Dock="Bottom" Padding="8,3" Background="{StaticResource Bg2}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+            <TextBlock Classes="dim" FontSize="11" Text="더블클릭: 다이어그램 열기 · 우클릭: 메뉴"/>
+          </Border>
+          <Grid>
+            <TreeView x:Name="Browser" Classes="browser" ItemsSource="{Binding BrowserRoots}" SelectedItem="{Binding SelectedBrowserNode}">
+              <TreeView.Styles>
+                <Style Selector="TreeViewItem" x:DataType="vm:BrowserNode">
+                  <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                </Style>
+              </TreeView.Styles>
+              <TreeView.ItemTemplate>
+                <TreeDataTemplate DataType="vm:BrowserNode" ItemsSource="{Binding Children}">
+                  <StackPanel Orientation="Horizontal" Spacing="6" Background="Transparent" ToolTip.Tip="{Binding Detail}">
+                    <ctrl:UmlGlyph Glyph="{Binding Glyph}" Width="16" Height="16" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding Name}" VerticalAlignment="Center" FontWeight="{Binding IsActive, Converter={x:Static vm:Converters.BoolToBold}}"/>
+                  </StackPanel>
+                </TreeDataTemplate>
+              </TreeView.ItemTemplate>
+              <TreeView.ContextMenu>
+                <ContextMenu>
+                  <MenuItem Header="다이어그램 열기" Command="{Binding OpenNodeCmdCommand}" CommandParameter="{x:Null}"><MenuItem.Icon><PathIcon Data="{StaticResource Ic.OpenInNew}" Width="14" Height="14"/></MenuItem.Icon></MenuItem>
+                  <Separator/>
+                  <MenuItem Header="추가">
+                    <MenuItem.Icon><PathIcon Data="{StaticResource Ic.Plus}" Width="14" Height="14"/></MenuItem.Icon>
+                    <MenuItem Header="패키지..." Command="{Binding AddPackageCommand}" CommandParameter="{x:Null}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="package"/></MenuItem.Icon></MenuItem>
+                    <Separator/>
+                    <MenuItem Header="클래스 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Class}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Class"/></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="시퀀스 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Sequence}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Sequence"/></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="유스케이스 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.UseCase}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:UseCase"/></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="액티비티 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Activity}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Activity"/></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="상태 머신 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.State}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:State"/></MenuItem.Icon></MenuItem>
+                    <MenuItem Header="컴포넌트 다이어그램" Command="{Binding AddDiagramCommand}" CommandParameter="{x:Static models:DiagramType.Component}"><MenuItem.Icon><ctrl:UmlGlyph Glyph="diagram:Component"/></MenuItem.Icon></MenuItem>
+                  </MenuItem>
+                  <MenuItem Header="이름 바꾸기..." Command="{Binding RenameNodeCommand}" CommandParameter="{x:Null}" InputGesture="F2"><MenuItem.Icon><PathIcon Data="{StaticResource Ic.RenameOutline}" Width="14" Height="14"/></MenuItem.Icon></MenuItem>
+                  <MenuItem Header="속성" Command="{Binding EditPropertiesCommand}"><MenuItem.Icon><PathIcon Data="{StaticResource Ic.TableEdit}" Width="14" Height="14"/></MenuItem.Icon></MenuItem>
+                  <Separator/>
+                  <MenuItem Header="삭제" Command="{Binding DeleteNodeCommand}" CommandParameter="{x:Null}"><MenuItem.Icon><PathIcon Data="{StaticResource Ic.DeleteOutline}" Width="14" Height="14"/></MenuItem.Icon></MenuItem>
+                </ContextMenu>
+              </TreeView.ContextMenu>
+            </TreeView>
+            <StackPanel IsVisible="{Binding NoProject}" VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="8" Margin="16">
+              <PathIcon Data="{StaticResource Ic.FileTreeOutline}" Width="32" Height="32" Foreground="{StaticResource FgFaint}"/>
+              <TextBlock Classes="dim" Text="열린 프로젝트가 없습니다" HorizontalAlignment="Center"/>
+              <Button Content="데모 프로젝트 열기" HorizontalAlignment="Center" Command="{Binding OpenDemoCommand}"/>
+            </StackPanel>
+          </Grid>
+        </DockPanel>
+      </Border>
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns"/>
+
+      <!-- Toolbox -->
+      <Border Grid.Column="2" Classes="dock" BorderThickness="0,0,1,0">
+        <DockPanel>
+          <Border DockPanel.Dock="Top" Classes="dockhead">
+            <Grid ColumnDefinitions="Auto,*">
+              <PathIcon Data="{StaticResource Ic.Toolbox}" Width="14" Height="14" Margin="0,0,6,0" Foreground="{StaticResource Accent}"/>
+              <TextBlock Grid.Column="1" Classes="title" Text="도구상자"/>
+            </Grid>
+          </Border>
+          <Border DockPanel.Dock="Bottom" Background="{StaticResource AccentDim}" Padding="8,5" BorderBrush="{StaticResource Accent}" BorderThickness="0,1,0,0">
+            <StackPanel>
+              <TextBlock FontSize="10.5" Foreground="#9FBDF0" Text="현재 도구"/>
+              <TextBlock Text="{Binding ModeText}" FontWeight="SemiBold" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+          </Border>
+          <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+            <ItemsControl ItemsSource="{Binding ToolSections}" Margin="0,0,0,6">
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:ToolSection">
+                  <StackPanel>
+                    <Border Classes="toolsec">
+                      <StackPanel Orientation="Horizontal" Spacing="5">
+                        <PathIcon Data="{StaticResource Ic.ChevronDown}" Width="10" Height="10" Foreground="{StaticResource FgDim}"/>
+                        <TextBlock Text="{Binding Title}" FontSize="11.5" FontWeight="SemiBold" Foreground="#C9D3E4"/>
+                      </StackPanel>
+                    </Border>
+                    <ItemsControl ItemsSource="{Binding Items}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate DataType="vm:ToolItem">
+                          <Button Classes="tool" Classes.active="{Binding IsActive}" ToolTip.Tip="{Binding Tip}"
+                                  Command="{ReflectionBinding $parent[Window].DataContext.SelectToolCommand}" CommandParameter="{Binding}">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <ctrl:UmlGlyph Glyph="{Binding Glyph}" Width="16" Height="16"/>
+                              <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                          </Button>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </ScrollViewer>
+        </DockPanel>
+      </Border>
+      <!-- Center: diagram tabs + view -->
+      <DockPanel Grid.Column="3">
+        <Border DockPanel.Dock="Top" Background="{StaticResource Bg0}" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1" Height="29">
+          <StackPanel Orientation="Horizontal">
+            <Border Classes="dtab" Classes.active="{Binding ShowStart}">
+              <Grid RowDefinitions="2,*">
+                <Rectangle Classes="pipe"/>
+                <Button Grid.Row="1" Classes="tabbody" Command="{Binding ShowStartPageCommand}" Height="26" Padding="10,0">
+                  <StackPanel Orientation="Horizontal" Spacing="6">
+                    <PathIcon Data="{StaticResource Ic.HomeOutline}" Width="13" Height="13" Foreground="{StaticResource FgDim}"/>
+                    <TextBlock Text="시작 페이지" VerticalAlignment="Center"/>
+                  </StackPanel>
+                </Button>
+              </Grid>
+            </Border>
+            <ItemsControl ItemsSource="{Binding OpenTabs}">
+              <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="vm:DiagramTab">
+                  <Border Classes="dtab" Classes.active="{Binding IsActive}">
+                    <Grid RowDefinitions="2,*">
+                      <Rectangle Classes="pipe"/>
+                      <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <Button Classes="tabbody" Height="26" Command="{ReflectionBinding $parent[Window].DataContext.ActivateTabCommand}" CommandParameter="{Binding}">
+                          <StackPanel Orientation="Horizontal" Spacing="6">
+                            <ctrl:UmlGlyph Glyph="{Binding Glyph}" Width="14" Height="14"/>
+                            <TextBlock Text="{Binding Title}" VerticalAlignment="Center"/>
+                          </StackPanel>
+                        </Button>
+                        <Button Classes="icon" Width="20" Height="20" Margin="0,0,4,0" ToolTip.Tip="닫기"
+                                Command="{ReflectionBinding $parent[Window].DataContext.CloseTabCommand}" CommandParameter="{Binding}">
+                          <PathIcon Data="{StaticResource Ic.Close}" Width="9" Height="9"/>
+                        </Button>
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+          </StackPanel>
+        </Border>
+
+        <Grid>
+          <ctrl:DiagramCanvas x:Name="Canvas" ViewModel="{Binding}" IsVisible="{Binding ShowDiagram}"/>
+
+          <Border IsVisible="{Binding ShowEmptyHint}" Background="{StaticResource Bg1}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+              <PathIcon Data="{StaticResource Ic.SitemapOutline}" Width="40" Height="40" Foreground="{StaticResource FgFaint}"/>
+              <TextBlock Text="열린 다이어그램이 없습니다" FontSize="16" HorizontalAlignment="Center" Classes="h"/>
+              <TextBlock Classes="dim" Text="프로젝트 브라우저에서 다이어그램을 더블클릭하거나 [디자인] 탭에서 새 다이어그램을 만드세요." HorizontalAlignment="Center"/>
+            </StackPanel>
+          </Border>
+
+          <!-- Start page -->
+          <Border IsVisible="{Binding ShowStart}">
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                <GradientStop Color="#1B2540" Offset="0"/>
+                <GradientStop Color="#121826" Offset="0.6"/>
+                <GradientStop Color="#0F141F" Offset="1"/>
+              </LinearGradientBrush>
+            </Border.Background>
+            <ScrollViewer>
+              <Grid Margin="48,40" ColumnDefinitions="*,32,300" MaxWidth="1100" MinWidth="760" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="18">
+                  <StackPanel Orientation="Horizontal" Spacing="14">
+                    <ctrl:UmlGlyph Glyph="root" Width="52" Height="52"/>
+                    <StackPanel VerticalAlignment="Center">
+                      <TextBlock Text="UML Studio" FontSize="30" FontWeight="Bold" Foreground="#FFFFFF"/>
+                      <TextBlock Text="엔터프라이즈 UML 모델링 워크벤치 · 클래스 · 시퀀스 · 유스케이스 · 액티비티 · 상태 · 컴포넌트" Classes="dim" FontSize="12.5"/>
+                    </StackPanel>
+                  </StackPanel>
+                  <TextBlock Text="시작하기" FontSize="15" Classes="h" Margin="0,10,0,0"/>
+                  <UniformGrid Columns="2" Margin="-6,0">
+                    <Button Classes="card" Margin="6" Command="{Binding NewProjectCommand}" CommandParameter="full">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <Border Width="40" Height="40" CornerRadius="6" Background="#2A4E8C" Margin="0,0,12,0" VerticalAlignment="Top"><PathIcon Data="{StaticResource Ic.SitemapOutline}" Width="22" Height="22" Foreground="#FFFFFF"/></Border>
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <TextBlock Text="모델 빌더로 새 프로젝트" FontWeight="SemiBold" FontSize="13.5"/>
+                          <TextBlock Classes="dim" TextWrapping="Wrap" Text="요구사항·도메인·상호작용·상태·흐름·아키텍처 패키지와 다이어그램을 자동 생성"/>
+                        </StackPanel>
+                      </Grid>
+                    </Button>
+                    <Button Classes="card" Margin="6" Command="{Binding NewProjectCommand}" CommandParameter="basic">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <Border Width="40" Height="40" CornerRadius="6" Background="#2C5A47" Margin="0,0,12,0" VerticalAlignment="Top"><PathIcon Data="{StaticResource Ic.FilePlusOutline}" Width="22" Height="22" Foreground="#FFFFFF"/></Border>
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <TextBlock Text="빈 프로젝트" FontWeight="SemiBold" FontSize="13.5"/>
+                          <TextBlock Classes="dim" TextWrapping="Wrap" Text="루트 모델 + 도메인 패키지 + 빈 클래스 다이어그램"/>
+                        </StackPanel>
+                      </Grid>
+                    </Button>
+                    <Button Classes="card" Margin="6" Command="{Binding OpenProjectCommand}">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <Border Width="40" Height="40" CornerRadius="6" Background="#5A4A2A" Margin="0,0,12,0" VerticalAlignment="Top"><PathIcon Data="{StaticResource Ic.FolderOpenOutline}" Width="22" Height="22" Foreground="#FFFFFF"/></Border>
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <TextBlock Text="프로젝트 열기" FontWeight="SemiBold" FontSize="13.5"/>
+                          <TextBlock Classes="dim" TextWrapping="Wrap" Text=".umlproj 모델 파일을 엽니다 (Ctrl+O)"/>
+                        </StackPanel>
+                      </Grid>
+                    </Button>
+                    <Button Classes="card" Margin="6" Command="{Binding OpenDemoCommand}">
+                      <Grid ColumnDefinitions="Auto,*">
+                        <Border Width="40" Height="40" CornerRadius="6" Background="#5A2E5E" Margin="0,0,12,0" VerticalAlignment="Top"><PathIcon Data="{StaticResource Ic.PackageVariantClosed}" Width="22" Height="22" Foreground="#FFFFFF"/></Border>
+                        <StackPanel Grid.Column="1" Spacing="3">
+                          <TextBlock Text="데모 프로젝트" FontWeight="SemiBold" FontSize="13.5"/>
+                          <TextBlock Classes="dim" TextWrapping="Wrap" Text="온라인 쇼핑몰 모델 — 7개 다이어그램, 패키지 계층"/>
+                        </StackPanel>
+                      </Grid>
+                    </Button>
+                  </UniformGrid>
+                  <Button IsVisible="{Binding HasProject}" Command="{Binding HideStartPageCommand}" HorizontalAlignment="Left" Padding="14,6">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                      <PathIcon Data="{StaticResource Ic.PageNextOutline}" Width="14" Height="14"/>
+                      <TextBlock Text="작업 중인 프로젝트로 돌아가기"/>
+                    </StackPanel>
+                  </Button>
+                  <Border Background="#161D2C" CornerRadius="6" Padding="16,12" BorderBrush="#2A3550" BorderThickness="1" Margin="0,8,0,0">
+                    <StackPanel Spacing="6">
+                      <StackPanel Orientation="Horizontal" Spacing="6">
+                        <PathIcon Data="{StaticResource Ic.KeyboardOutline}" Width="15" Height="15" Foreground="{StaticResource Accent}"/>
+                        <TextBlock Text="작업 팁" Classes="h"/>
+                      </StackPanel>
+                      <TextBlock Classes="dim" TextWrapping="Wrap" Text="• 도구상자에서 요소를 고른 뒤 캔버스를 클릭 → 배치 · 관계 도구는 시작 요소에서 끝 요소로 드래그"/>
+                      <TextBlock Classes="dim" TextWrapping="Wrap" Text="• 빈 곳을 드래그해 범위 선택, Ctrl+클릭으로 다중 선택, 핸들로 크기 조절, 방향키로 미세 이동"/>
+                      <TextBlock Classes="dim" TextWrapping="Wrap" Text="• Ctrl+휠 확대/축소 · 가운데 버튼 또는 Space+드래그로 화면 이동 · F2 속성 편집 · Ctrl+D 복제"/>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Spacing="10">
+                  <TextBlock Text="최근 프로젝트" FontSize="15" Classes="h" Margin="0,96,0,0"/>
+                  <Border Background="#161D2C" CornerRadius="6" BorderBrush="#2A3550" BorderThickness="1" Padding="4" MinHeight="120">
+                    <Grid>
+                      <ItemsControl ItemsSource="{Binding Recent}">
+                        <ItemsControl.ItemTemplate>
+                          <DataTemplate DataType="svc:RecentFile">
+                            <Button Classes="recent" Command="{ReflectionBinding $parent[Window].DataContext.OpenRecentCommand}" CommandParameter="{Binding}">
+                              <Grid ColumnDefinitions="Auto,*">
+                                <ctrl:UmlGlyph Glyph="root" Width="20" Height="20" Margin="0,0,10,0" VerticalAlignment="Top"/>
+                                <StackPanel Grid.Column="1">
+                                  <TextBlock Text="{Binding FileName}" FontWeight="SemiBold" Foreground="#E6ECF5"/>
+                                  <TextBlock Text="{Binding Folder}" Classes="dim" FontSize="11" TextTrimming="CharacterEllipsis"/>
+                                  <TextBlock Text="{Binding When}" Foreground="{StaticResource FgFaint}" FontSize="10.5"/>
+                                </StackPanel>
+                              </Grid>
+                            </Button>
+                          </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                      </ItemsControl>
+                      <TextBlock Classes="dim" Margin="12" TextWrapping="Wrap" IsVisible="{Binding !Recent.Count}"
+                                 Text="최근에 연 프로젝트가 없습니다. 저장하거나 연 프로젝트가 여기에 표시됩니다."/>
+                    </Grid>
+                  </Border>
+                </StackPanel>
+              </Grid>
+            </ScrollViewer>
+          </Border>
+        </Grid>
+      </DockPanel>
+
+      <GridSplitter Grid.Column="4" ResizeDirection="Columns"/>
+      <!-- Right: Properties + Notes -->
+      <Grid Grid.Column="5" RowDefinitions="*,4,180">
+        <Border Classes="dock" BorderThickness="1,0,0,0">
+          <DockPanel>
+            <Border DockPanel.Dock="Top" Classes="dockhead">
+              <Grid ColumnDefinitions="Auto,*">
+                <PathIcon Data="{StaticResource Ic.TableEdit}" Width="14" Height="14" Margin="0,0,6,0" Foreground="{StaticResource Accent}"/>
+                <TextBlock Grid.Column="1" Classes="title" Text="속성"/>
+              </Grid>
+            </Border>
+            <Border DockPanel.Dock="Top" Padding="10,8" Background="#1A2030" BorderBrush="{StaticResource Line}" BorderThickness="0,0,0,1">
+              <Grid ColumnDefinitions="Auto,*">
+                <Border Width="30" Height="30" CornerRadius="4" Background="#2F3A54" Margin="0,0,10,0" IsVisible="{Binding Properties.HasSelection}">
+                  <ctrl:UmlGlyph Glyph="{Binding Properties.Glyph}" Width="20" Height="20"/>
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                  <TextBlock Text="{Binding Properties.Title}" FontWeight="SemiBold" FontSize="13" Foreground="#FFFFFF" TextTrimming="CharacterEllipsis"/>
+                  <TextBlock Text="{Binding Properties.TypeName}" Classes="dim" FontSize="11"/>
+                </StackPanel>
+              </Grid>
+            </Border>
+            <TabControl Classes="ptabs" SelectedIndex="{Binding Properties.SelectedTab}">
+              <TabItem Header="일반">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Margin="10,8" Spacing="6">
+<Grid IsVisible="{Binding Properties.IsShape}" ColumnDefinitions="84,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+<TextBlock Grid.Row="0" Classes="lbl" Text="이름"/>
+<TextBox x:Name="PropName" Grid.Row="0" Grid.Column="1" Text="{Binding Properties.Name}" Margin="0,2"/>
+<TextBlock Grid.Row="1" Classes="lbl" Text="스테레오타입"/>
+<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Properties.Stereotype}" Margin="0,2" Watermark="예: entity, service"/>
+<TextBlock Grid.Row="2" Classes="lbl" Text="유형"/>
+<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Properties.TypeName}" IsReadOnly="True" Foreground="{StaticResource FgDim}" Margin="0,2"/>
+<TextBlock Grid.Row="3" Classes="lbl" Text="별칭"/>
+<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Properties.Alias}" Margin="0,2"/>
+<TextBlock Grid.Row="4" Classes="lbl" Text="상태"/>
+<ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Properties.StatusOptions}" SelectedItem="{Binding Properties.Status}" Margin="0,2" HorizontalAlignment="Stretch"/>
+<TextBlock Grid.Row="5" Classes="lbl" Text="가시성"/>
+<ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Properties.VisibilityOptions}" SelectedItem="{Binding Properties.Visibility}" Margin="0,2" HorizontalAlignment="Stretch"/>
+<TextBlock Grid.Row="6" Classes="lbl" Text="버전"/>
+<TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Properties.Version}" Margin="0,2"/>
+<TextBlock Grid.Row="7" Classes="lbl" Text=""/>
+<CheckBox Grid.Row="7" Grid.Column="1" Content="추상 (Abstract)" IsChecked="{Binding Properties.IsAbstract}" IsVisible="{Binding Properties.HasOperations}"/>
+<TextBlock Grid.Row="8" Classes="lbl" Text="위치 (X, Y)" Margin="0,8,0,0"/>
+<Grid Grid.Row="8" Grid.Column="1" ColumnDefinitions="*,6,*" Margin="0,8,0,2"><TextBox Text="{Binding Properties.X}"/><TextBox Grid.Column="2" Text="{Binding Properties.Y}"/></Grid>
+<TextBlock Grid.Row="9" Classes="lbl" Text="크기 (W, H)"/>
+<Grid Grid.Row="9" Grid.Column="1" ColumnDefinitions="*,6,*" Margin="0,2"><TextBox Text="{Binding Properties.Width}"/><TextBox Grid.Column="2" Text="{Binding Properties.Height}"/></Grid>
+</Grid>
+<Grid IsVisible="{Binding Properties.IsConnector}" ColumnDefinitions="84,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+<TextBlock Grid.Row="0" Classes="lbl" Text="유형"/>
+<ComboBox Grid.Row="0" Grid.Column="1" ItemsSource="{Binding Properties.ConnectorKinds}" SelectedItem="{Binding Properties.ConnectorKind}" Margin="0,2" HorizontalAlignment="Stretch"><ComboBox.ItemTemplate><DataTemplate DataType="vm:ConnectorChoice"><TextBlock Text="{Binding Name}"/></DataTemplate></ComboBox.ItemTemplate></ComboBox>
+<TextBlock Grid.Row="1" Classes="lbl" Text="이름"/>
+<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Properties.Label}" Margin="0,2"/>
+<TextBlock Grid.Row="2" Classes="lbl" Text="스테레오타입"/>
+<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Properties.Stereotype}" Margin="0,2"/>
+<TextBlock Grid.Row="3" Classes="lbl" Text="가드"/>
+<TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Properties.Guard}" Margin="0,2" Watermark="[조건]"/>
+<TextBlock Grid.Row="4" Classes="lbl" Text="출발"/>
+<TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Properties.SourceName}" IsReadOnly="True" Foreground="{StaticResource FgDim}" Margin="0,2"/>
+<TextBlock Grid.Row="5" Classes="lbl" Text="도착"/>
+<TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Properties.TargetName}" IsReadOnly="True" Foreground="{StaticResource FgDim}" Margin="0,2"/>
+<TextBlock Grid.Row="6" Classes="lbl" Text="출발 다중성" Margin="0,8,0,0"/>
+<TextBox Grid.Row="6" Grid.Column="1" Text="{Binding Properties.FromMultiplicity}" Margin="0,8,0,2" Watermark="1, 0..*, 1..*"/>
+<TextBlock Grid.Row="7" Classes="lbl" Text="도착 다중성"/>
+<TextBox Grid.Row="7" Grid.Column="1" Text="{Binding Properties.ToMultiplicity}" Margin="0,2"/>
+<TextBlock Grid.Row="8" Classes="lbl" Text="출발 역할"/>
+<TextBox Grid.Row="8" Grid.Column="1" Text="{Binding Properties.FromRole}" Margin="0,2"/>
+<TextBlock Grid.Row="9" Classes="lbl" Text="도착 역할"/>
+<TextBox Grid.Row="9" Grid.Column="1" Text="{Binding Properties.ToRole}" Margin="0,2"/>
+<TextBlock Grid.Row="10" Classes="lbl" Text=""/>
+<CheckBox Grid.Row="10" Grid.Column="1" Content="직교 라우팅 (Orthogonal)" IsChecked="{Binding Properties.Orthogonal}"/>
+</Grid>
+<Grid IsVisible="{Binding Properties.IsDiagram}" ColumnDefinitions="84,*" RowDefinitions="Auto,Auto,Auto">
+<TextBlock Grid.Row="0" Classes="lbl" Text="이름"/>
+<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Properties.Name}" Margin="0,2"/>
+<TextBlock Grid.Row="1" Classes="lbl" Text="유형"/>
+<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Properties.TypeName}" IsReadOnly="True" Foreground="{StaticResource FgDim}" Margin="0,2"/>
+<TextBlock Grid.Row="2" Classes="lbl" Text="작성자"/>
+<TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Properties.Author}" Margin="0,2"/>
+</Grid>
+<Grid IsVisible="{Binding Properties.IsPackage}" ColumnDefinitions="84,*" RowDefinitions="Auto,Auto">
+<TextBlock Grid.Row="0" Classes="lbl" Text="이름"/>
+<TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Properties.Name}" Margin="0,2"/>
+<TextBlock Grid.Row="1" Classes="lbl" Text="스테레오타입"/>
+<TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Properties.Stereotype}" Margin="0,2"/>
+</Grid>
+
+                    <TextBlock IsVisible="{Binding Properties.ShowEmptyHint}" Classes="dim" TextWrapping="Wrap" Margin="0,10"
+                               Text="다이어그램에서 요소나 연결선을 선택하면 속성이 표시됩니다."/>
+                    <TextBlock IsVisible="{Binding Properties.IsMulti}" Classes="dim" TextWrapping="Wrap" Margin="0,10"
+                               Text="여러 요소가 선택되었습니다. [레이아웃] 탭에서 정렬·간격·크기를 맞출 수 있습니다."/>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+              <TabItem Header="모양" IsVisible="{Binding Properties.IsShape}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Margin="10,8" Spacing="6">
+                    <Grid ColumnDefinitions="84,*,Auto" RowDefinitions="Auto,Auto,Auto,Auto">
+<TextBlock Grid.Row="0" Classes="lbl" Text="채우기"/><TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Properties.Fill}" Margin="0,2" Watermark="기본값"/><Border Grid.Row="0" Grid.Column="2" Width="22" Height="22" Margin="6,0,0,0" CornerRadius="2" BorderBrush="#66728A" BorderThickness="1" Background="{Binding Properties.Fill, Converter={x:Static vm:Converters.HexToBrush}}"/>
+<TextBlock Grid.Row="1" Classes="lbl" Text="테두리"/><TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Properties.Stroke}" Margin="0,2" Watermark="기본값"/><Border Grid.Row="1" Grid.Column="2" Width="22" Height="22" Margin="6,0,0,0" CornerRadius="2" BorderBrush="#66728A" BorderThickness="1" Background="{Binding Properties.Stroke, Converter={x:Static vm:Converters.HexToBrush}}"/>
+<TextBlock Grid.Row="2" Classes="lbl" Text="글자색"/><TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Properties.FontColor}" Margin="0,2" Watermark="기본값"/><Border Grid.Row="2" Grid.Column="2" Width="22" Height="22" Margin="6,0,0,0" CornerRadius="2" BorderBrush="#66728A" BorderThickness="1" Background="{Binding Properties.FontColor, Converter={x:Static vm:Converters.HexToBrush}}"/>
+
+                      <TextBlock Grid.Row="3" Classes="lbl" Text="선 두께"/>
+                      <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Properties.LineWidth}" Margin="0,2"/>
+                    </Grid>
+                    <TextBlock Classes="lbl" Text="채우기 팔레트" Margin="0,6,0,0"/>
+                    <ItemsControl ItemsSource="{Binding Properties.Palette}">
+                      <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="x:String">
+                          <Button Width="28" Height="22" Margin="0,0,4,4" Padding="0" CornerRadius="2" BorderBrush="#66728A" BorderThickness="1" MinWidth="0" MinHeight="0"
+                                  Background="{Binding Converter={x:Static vm:Converters.HexToBrush}}" ToolTip.Tip="{Binding}"
+                                  Command="{ReflectionBinding $parent[Window].DataContext.Properties.SetFillCommand}" CommandParameter="{Binding}"/>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="기본 모양으로 되돌리기" Command="{Binding Properties.ResetAppearanceCommand}" HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+              <TabItem Header="피처" IsVisible="{Binding Properties.HasFeatures}">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                  <StackPanel Margin="8,8" Spacing="4">
+<Grid ColumnDefinitions="*,Auto">
+  <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"><ctrl:UmlGlyph Glyph="feature:attr" Width="14" Height="14"/><TextBlock Text="특성 (Attributes)" Classes="h"/></StackPanel>
+  <Button Grid.Column="1" Classes="icon" ToolTip.Tip="특성 추가" Command="{Binding Properties.AddAttributeCommand}"><PathIcon Data="{StaticResource Ic.Plus}"/></Button>
+</Grid>
+<ItemsControl ItemsSource="{Binding Properties.Attributes}">
+  <ItemsControl.ItemTemplate>
+    <DataTemplate DataType="vm:FeatureRow">
+      <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,1">
+        <TextBox Text="{Binding Text}" FontFamily="Consolas, D2Coding, Noto Sans Mono CJK KR, monospace" FontSize="11.5"/>
+        <Button Grid.Column="1" Classes="icon" ToolTip.Tip="위로" Command="{ReflectionBinding $parent[Window].DataContext.Properties.MoveFeatureUpCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Ic.ChevronUp}"/></Button>
+        <Button Grid.Column="2" Classes="icon" ToolTip.Tip="삭제" Command="{ReflectionBinding $parent[Window].DataContext.Properties.RemoveFeatureCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Ic.Close}"/></Button>
+      </Grid>
+    </DataTemplate>
+  </ItemsControl.ItemTemplate>
+</ItemsControl>
+
+                    <StackPanel IsVisible="{Binding Properties.HasOperations}" Spacing="4" Margin="0,10,0,0">
+<Grid ColumnDefinitions="*,Auto">
+  <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"><ctrl:UmlGlyph Glyph="feature:op" Width="14" Height="14"/><TextBlock Text="오퍼레이션 (Operations)" Classes="h"/></StackPanel>
+  <Button Grid.Column="1" Classes="icon" ToolTip.Tip="오퍼레이션 추가" Command="{Binding Properties.AddOperationCommand}"><PathIcon Data="{StaticResource Ic.Plus}"/></Button>
+</Grid>
+<ItemsControl ItemsSource="{Binding Properties.Operations}">
+  <ItemsControl.ItemTemplate>
+    <DataTemplate DataType="vm:FeatureRow">
+      <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,1">
+        <TextBox Text="{Binding Text}" FontFamily="Consolas, D2Coding, Noto Sans Mono CJK KR, monospace" FontSize="11.5"/>
+        <Button Grid.Column="1" Classes="icon" ToolTip.Tip="위로" Command="{ReflectionBinding $parent[Window].DataContext.Properties.MoveFeatureUpCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Ic.ChevronUp}"/></Button>
+        <Button Grid.Column="2" Classes="icon" ToolTip.Tip="삭제" Command="{ReflectionBinding $parent[Window].DataContext.Properties.RemoveFeatureCommand}" CommandParameter="{Binding}"><PathIcon Data="{StaticResource Ic.Close}"/></Button>
+      </Grid>
+    </DataTemplate>
+  </ItemsControl.ItemTemplate>
+</ItemsControl>
+
+                    </StackPanel>
+                    <TextBlock Classes="dim" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"
+                               Text="표기: + public, - private, # protected, ~ package · 예) - id : Long, + place(cart : Cart) : Order"/>
+                  </StackPanel>
+                </ScrollViewer>
+              </TabItem>
+            </TabControl>
+          </DockPanel>
+        </Border>
+        <GridSplitter Grid.Row="1" ResizeDirection="Rows"/>
+        <Border Grid.Row="2" Classes="dock" BorderThickness="1,1,0,0">
+          <DockPanel>
+            <Border DockPanel.Dock="Top" Classes="dockhead">
+              <Grid ColumnDefinitions="Auto,*">
+                <PathIcon Data="{StaticResource Ic.NoteTextOutline}" Width="14" Height="14" Margin="0,0,6,0" Foreground="{StaticResource Accent}"/>
+                <TextBlock Grid.Column="1" Classes="title" Text="노트"/>
+              </Grid>
+            </Border>
+            <TextBox Margin="6" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
+                     Text="{Binding Properties.Notes}" IsEnabled="{Binding Properties.CanEditNotes}"
+                     Watermark="선택한 요소·연결선·다이어그램의 설명을 입력하세요"/>
+          </DockPanel>
+        </Border>
+      </Grid>
+    </Grid>
+  </DockPanel>
+</Window>

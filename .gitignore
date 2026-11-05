@@ -1,0 +1,47 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Pp]ublish/
+[Aa]rtifacts/
+[Oo]ut/
+
+# .NET
+*.user
+*.userosscache
+*.suo
+*.sln.docstates
+*.userprefs
+project.lock.json
+project.fragment.lock.json
+*.nuget.props
+*.nuget.targets
+*.nupkg
+*.snupkg
+.nuget/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.rsuser
+*.DotSettings.user
+
+# Avalonia
+*.avalonia
+
+# Test / coverage
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+[Ll]ogs/
