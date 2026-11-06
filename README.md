@@ -7,6 +7,16 @@ Windows와 macOS에서 쓰는 크로스플랫폼 UML 모델링 도구
 [![C#](https://img.shields.io/badge/C%23-239120?logo=csharp&logoColor=white)](https://learn.microsoft.com/dotnet/csharp/)
 [![Windows](https://img.shields.io/badge/Windows-x64-0078D6?logo=windows&logoColor=white)](#windows)
 [![macOS](https://img.shields.io/badge/macOS-Apple%20Silicon%20%7C%20Intel-000000?logo=apple&logoColor=white)](#macos)
+[![version](https://img.shields.io/badge/version-2.0.0-2ea44f)](UmlStudio.csproj)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/mystous/uml-studio)](https://github.com/mystous/uml-studio/stargazers)
+[![Forks](https://img.shields.io/github/forks/mystous/uml-studio)](https://github.com/mystous/uml-studio/forks)
+[![Issues](https://img.shields.io/github/issues/mystous/uml-studio)](https://github.com/mystous/uml-studio/issues)
+[![Last commit](https://img.shields.io/github/last-commit/mystous/uml-studio)](https://github.com/mystous/uml-studio/commits/main)
+[![Contributors](https://img.shields.io/github/contributors/mystous/uml-studio)](https://github.com/mystous/uml-studio/graphs/contributors)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/mystous/uml-studio/pulls)
+[![Open Source](https://img.shields.io/badge/Open%20Source-yes-blue.svg)](https://github.com/mystous/uml-studio)
 
 .NET 8과 Avalonia 11로 만든 데스크톱 UML 모델러입니다. 클래스·시퀀스·유스케이스·액티비티·상태·컴포넌트 다이어그램을 그리고, 프로젝트를 `.umlproj`(JSON)로 저장합니다. 1.x 파일은 열 때 자동으로 변환됩니다.
 
@@ -109,3 +119,7 @@ dotnet publish -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=
 ```
 
 Windows 결과물은 `publish/win-x64/UMLStudio.exe`입니다. macOS 결과물은 `publish/osx-arm64/UMLStudio` 또는 `publish/osx-x64/UMLStudio`이며, 실행 전에 `chmod +x UMLStudio`가 필요합니다.
+
+## 라이선스
+
+이 프로젝트는 [MIT 라이선스](LICENSE)로 배포됩니다. Copyright (c) 2026 mystous.
